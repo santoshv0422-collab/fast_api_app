@@ -22,6 +22,15 @@ def get_job(job_id: int):
     return jobs[job_id]
 
 
+@router.put("/{job_id}")
+def update_job(job_id: int, job: JobUpdate):
+    jobs[job_id] = job
+    return jobs
+
+@router.delete("/{job_id}")
+def delete_job(job_id: int):        
+    del jobs[job_id]
+    return {"message": "Job deleted successfully."}
 
 
 # @router.get("/")
