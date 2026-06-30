@@ -2,10 +2,17 @@ from fastapi import FastAPI
 from routers.company import router as company_router
 from routers.job import router as job_router
 from models import job as job_model, company as company_model
-from database import Base, engine, SessionLocal
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-print("engine is", job_model.engine)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 app.include_router(company_router)
 app.include_router(job_router)

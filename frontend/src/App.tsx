@@ -1,53 +1,50 @@
-import Welcome from "./components/Welcome";
-import NavBar from "./components/NavBar";
-import CompanyCard from "./components/CompanyCard";
-import JobCard from "./components/JobCard";
-import Footer from "./components/Footer";
+import Welcome from "./component/Welcome";
+import NavBar from "./component/NavBar";
+import CompanyCard from "./component/CompanyCard";
+import JobCard from "./component/JobCard";
+import Footer from "./component/Footer";
 import { useEffect, useState } from "react";
-import { getCompanies } from "./Services/CompanyService";
+import { getCompanies } from "./services/CompanyService";
 import type { Company } from "./types/company";
 
 function App() {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
-    const [companies, setCompanies] = useState<Company[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [companies, setCompanies] = useState<Company[]>([]);
 
-    async function fetchCompanies() {
-        setLoading(true);
-        try {
-          const companies = await getCompanies();
-          setCompanies(companies);
-        }
-        catch (error) {
-          setError(error as Error);
-        }
-        finally {
-          setLoading(false);
-        }
+  async function fetchCompanies() {
+    setLoading(true);
+    try {
+      const companies = await getCompanies();
+      setCompanies(companies);
+    } catch (error) {
+      setError(error as Error);
+    } finally {
+      setLoading(false);
     }
+  }
+  
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
-    useEffect(() => {
-        fetchCompanies();
-    }, []);
+  if(error) {
+    return <div>Error: {error.message}</div>;
+  }
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+  if(loading) {
+    return <div>Loading...</div>;
+  }
 
-    if (error) {
-        return <div>Error: {error.message}</div>;
-    }
-
-    return (
-        <div>
-            <h1>Companies</h1>
-            <ul>
-                {companies.map((company) => (
-                    <li key={company.id}>{company.name}</li>
-                ))}
-            </ul>
-        </div>
-    );
+  return (
+    <div>
+      <NavBar />
+      <Welcome />
+      <CompanyCard companies={companies} />
+      <JobCard />
+      <Footer />
+    </div>
+  );
 }
-   }
-export default App
+
+export default App;
