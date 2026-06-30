@@ -18,7 +18,8 @@ def create_company(company_data: CompanyCreate, db: Session = Depends(get_db)):
     db_company = company.Company(
         name=company_data.name,
         email=company_data.email,
-        phone=company_data.phone
+        phone=company_data.phone,
+        location=company_data.location
     )
 
     print("Before commit")
@@ -51,6 +52,7 @@ def get_company(company_id: int, db: Session = Depends(get_db)):
         )
 
     return db_company
+
 @router.put("/{company_id}", response_model=CompanyResponse)
 def update_company(company_id: int, company_data: CompanyUpdate, db: Session = Depends(get_db)):
     db_company = db.query(company.Company).filter(

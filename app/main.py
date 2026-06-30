@@ -1,13 +1,15 @@
 from fastapi import FastAPI
-from routers import job
-from routers import company
+from routers.company import router as company_router
+from routers.job import router as job_router
 from models import job as job_model, company as company_model
 from database import Base, engine, SessionLocal
+
 app = FastAPI()
 print("engine is", job_model.engine)
-Base.metadata.create_all(bind=job_model.engine)
-app.include_router(company.router)
-app.include_router(job.router)
+
+app.include_router(company_router)
+app.include_router(job_router)
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}

@@ -1,13 +1,53 @@
-import Welcome from "./component/welcome";
-import NavBar from "./component/NavBar";
+import Welcome from "./components/Welcome";
+import NavBar from "./components/NavBar";
+import CompanyCard from "./components/CompanyCard";
+import JobCard from "./components/JobCard";
+import Footer from "./components/Footer";
+import { useEffect, useState } from "react";
+import { getCompanies } from "./Services/CompanyService";
+import type { Company } from "./types/company";
 
-function App(){
-  return(
-    <>
-      <NavBar />
-      <Welcome />
-    </>
-  )
+function App() {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+    const [companies, setCompanies] = useState<Company[]>([]);
+
+    async function fetchCompanies() {
+        setLoading(true);
+        try {
+          const companies = await getCompanies();
+          setCompanies(companies);
+        }
+        catch (error) {
+          setError(error as Error);
+        }
+        finally {
+          setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchCompanies();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error.message}</div>;
+    }
+
+    return (
+        <div>
+            <h1>Companies</h1>
+            <ul>
+                {companies.map((company) => (
+                    <li key={company.id}>{company.name}</li>
+                ))}
+            </ul>
+        </div>
+    );
 }
-
+   }
 export default App
