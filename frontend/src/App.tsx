@@ -8,43 +8,46 @@ import { getCompanies } from "./services/CompanyService";
 import type { Company } from "./types/company";
 
 function App() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [companies, setCompanies] = useState<Company[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+    const [companies, setCompanies] = useState<Company[]>([]);
 
-  async function fetchCompanies() {
-    setLoading(true);
-    try {
-      const companies = await getCompanies();
-      setCompanies(companies);
-    } catch (error) {
-      setError(error as Error);
-    } finally {
-      setLoading(false);
+    async function fetchCompanies() {
+        setLoading(true);
+        try {
+          const companies = await getCompanies();
+          setCompanies(companies);
+        }
+        catch (error) {
+          setError(error as Error);
+        }
+        finally {
+          setLoading(false);
+        }
     }
-  }
-  
-  useEffect(() => {
-    fetchCompanies();
-  }, []);
 
-  if(error) {
-    return <div>Error: {error.message}</div>;
-  }
+    useEffect(() => {
+        fetchCompanies();
+    }, []);
 
-  if(loading) {
-    return <div>Loading...</div>;
-  }
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
-  return (
-    <div>
-      <NavBar />
-      <Welcome />
-      <CompanyCard companies={companies} />
-      <JobCard />
-      <Footer />
-    </div>
-  );
+    if (error) {
+        return <div>Error: {error.message}</div>;
+    }
+
+    return (
+        <>
+        <NavBar/>
+        <Welcome/>
+        <br/>
+        <CompanyCard companies={companies}/>
+        <JobCard/>
+        <Footer/> 
+        </>
+    )
 }
-
-export default App;
+   
+export default App
