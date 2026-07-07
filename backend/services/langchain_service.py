@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from langchain_core.runnables import chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables import RunnableWithMessageHistory
@@ -35,7 +34,9 @@ chat_with_memory=RunnableWithMessageHistory(
     input_messages_key="user_query",
     message_history="chat_history"
 )
-
 def ask_career_advice(session_id: str, user_query: str):
-    response = chat_with_memory.invoke({"user_query": user_query}, {"configurable": {"session_id": session_id}})
-    return responsen 
+    response = chat_with_memory.invoke(
+        {"user_query": user_query},
+        {"configurable": {"session_id": session_id}}
+    )
+    return response.content
