@@ -1,14 +1,19 @@
 import os
 from dotenv import load_dotenv
+from groq import AuthenticationError
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from services.qdrant_service import search_jobs
 
 load_dotenv()
 
-llm=ChatGroq(
+llm_api_key = os.getenv("GROQ_API_KEY") or os.getenv("API_KEY") or os.getenv("GEMINIAPIKEY")
+if not llm_api_key:
+    raise ValueError("Missing Groq API key. Set GROQ_API_KEY or API_KEY in the backend .env file.")
+
+llm = ChatGroq(
     model="llama-3.3-70b-versatile",
-    api_key=os.getenv("GROQ_API_KEY"),
+    api_key=llm_api_key,
     temperature=0.3,
 )
 rag_prompt=ChatPromptTemplate.from_messages([
@@ -31,5 +36,10 @@ def rag_job_search(question:str) -> str:
         for r in results
     ])
 
-    response = rag_chain.invoke({"context": context,"question":question})
-    return response.content
+    try:
+        response = rag_chain.invoke({"context": context,"question":question})
+        return response.content
+    except AuthenticationError:
+        return "LLM authentication failed: invalid Groq API key. Update GROQ_API_KEY in backend/.env."
+    except Exception as e:
+        return f"LLM service error: {e}"

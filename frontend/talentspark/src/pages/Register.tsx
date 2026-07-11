@@ -1,5 +1,6 @@
-import {useState} from "react";
-import {register} from "../Services/AuthService";
+import { useState } from "react";
+import axios from "axios";
+import { register } from "../Services/AuthService";
 
 type Props = {
     onSwitchToLogin: () => void;
@@ -19,9 +20,15 @@ function Register({onSwitchToLogin}: Props){
             onSwitchToLogin();
         } catch (error) {
             console.error("Error during registration:", error);
-            alert("Registration failed");
+            const message = axios.isAxiosError(error)
+                ? error.response?.data?.detail || error.message
+                : error instanceof Error
+                    ? error.message
+                    : "Registration failed";
+            alert(`Registration failed: ${message}`);
         }
-    }   
+    }
+
     return(
         <form onSubmit={handleSubmit}>
             <h2>Register</h2>

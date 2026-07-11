@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import { analyseResume } from "../Services/RagService";
 
 function ResumeAnalyser() {
@@ -13,8 +14,14 @@ function ResumeAnalyser() {
         try {
             const result = await analyseResume(resumeText);
             setAnalysis(result.analysis);
-        } catch {
-            setAnalysis("Failed to analyse resume. Please try again.");
+        } catch (error) {
+            console.error("Resume analyse error:", error);
+            const message = axios.isAxiosError(error)
+                ? error.response?.data?.detail || JSON.stringify(error.response?.data) || error.message
+                : error instanceof Error
+                    ? error.message
+                    : "Failed to analyse resume. Please try again.";
+            setAnalysis(`Failed to analyse resume: ${message}`);
         } finally {
             setLoading(false);
         }

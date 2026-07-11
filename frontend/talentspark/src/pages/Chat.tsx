@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import { askCareerChat } from "../Services/ChatService";
 import type { ChatMessage } from "../types/chat";
 
@@ -23,7 +24,12 @@ function Chat() {
             setMessages(prev => [...prev, botMessage]);
         } catch (error) {
             console.error("Chat error:", error);
-            const errorMessage: ChatMessage = { role: "bot", content: "Error: Could not get response" };
+            const message = axios.isAxiosError(error)
+                ? error.response?.data?.detail || JSON.stringify(error.response?.data) || error.message
+                : error instanceof Error
+                    ? error.message
+                    : "Error: Could not get response";
+            const errorMessage: ChatMessage = { role: "bot", content: `Error: ${message}` };
             setMessages(prev => [...prev, errorMessage]);
         } finally {
             setLoading(false);

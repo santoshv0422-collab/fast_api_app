@@ -5,22 +5,24 @@ from dotenv import load_dotenv
 
 from fastapi import Depends, HTTPException
 from models import users
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from database import get_db
 
-load_dotenv()   
+load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM="HS256"
+ALGORITHM = "HS256"
 
-def create_access_token(data: dict, expires_delta: timedelta
-                         = timedelta(hours=2)):
+
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=2)):
     to_encode = data.copy()
-    expire = datetime.now()+expires_delta
+    expire = datetime.now() + expires_delta
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, key=SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def verify_token(token: str, db: Session = Depends(get_db)):
+
+async def verify_token(token: str, db: AsyncSession = Depends(get_db)):
     if not token or token in ("undefined", "null"):
         raise HTTPException(status_code=401, detail="No token provided")
     try:
@@ -29,7 +31,9 @@ def verify_token(token: str, db: Session = Depends(get_db)):
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-    current_user = db.query(users.User).filter(users.User.id == user_id).first()
+    result = await db.execute(select(users.User).filter(users.User.id == user_id))
+    current_user = result.scalars().first()
     if current_user is None:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
     return current_user

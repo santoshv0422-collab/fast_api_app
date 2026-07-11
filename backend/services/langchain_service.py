@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from groq import AuthenticationError
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.chat_message_histories import ChatMessageHistory
@@ -7,9 +8,13 @@ from langchain_core.runnables import RunnableWithMessageHistory
 
 load_dotenv()
 
-llm=ChatGroq(
+llm_api_key = os.getenv("GROQ_API_KEY") or os.getenv("API_KEY") or os.getenv("GEMINIAPIKEY")
+if not llm_api_key:
+    raise ValueError("Missing Groq API key. Set GROQ_API_KEY or API_KEY in the backend .env file.")
+
+llm = ChatGroq(
     model="llama-3.3-70b-versatile",
-    api_key=os.getenv("API_KEY"),
+    api_key=llm_api_key,
     temperature=0.7,
 )
 
@@ -35,8 +40,13 @@ chat_with_memory=RunnableWithMessageHistory(
     message_history="chat_history"
 )
 def ask_career_advice(session_id: str, user_query: str):
-    response = chat_with_memory.invoke(
-        {"user_query": user_query},
-        {"configurable": {"session_id": session_id}}
-    )
-    return response.content
+    try:
+        response = chat_with_memory.invoke(
+            {"user_query": user_query},
+            {"configurable": {"session_id": session_id}}
+        )
+        return response.content
+    except AuthenticationError:
+        return "LLM authentication failed: invalid Groq API key. Update GROQ_API_KEY in backend/.env."
+    except Exception as e:
+        return f"LLM service error: {e}"

@@ -37,8 +37,11 @@ def rag_ask(request: RagSearchRequest):
 
 @router.post("/analyse-resume", response_model=ResumeResponse)
 def resume_analyse(request: ResumeRequest):
-    analysis = analyse_resume(request.resume_text)
-    return ResumeResponse(analysis=analysis)
+    try:
+        analysis = analyse_resume(request.resume_text)
+        return ResumeResponse(analysis=analysis)
+    except Exception as e:
+        return ResumeResponse(analysis=f"Resume service error: {e}")
 
 
 @router.post("/job-match", response_model=JobMatchResponse)

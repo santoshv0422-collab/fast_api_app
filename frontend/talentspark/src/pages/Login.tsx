@@ -1,5 +1,6 @@
-import {useState} from "react";
-import {login} from "../Services/AuthService";
+import { useState } from "react";
+import axios from "axios";
+import { login } from "../Services/AuthService";
 
 type Props = {
     onLogin: (token: string) => void;
@@ -17,9 +18,15 @@ function Login({onLogin, onSwitchToRegister}: Props){
             onLogin(response.access_token);
         } catch (error) {
             console.error("Error during login:", error);
-            alert("Login failed");
+            const message = axios.isAxiosError(error)
+                ? error.response?.data?.detail || JSON.stringify(error.response?.data) || error.message
+                : error instanceof Error
+                    ? error.message
+                    : "Network error";
+            alert(`Login failed: ${message}`);
         }
-    }   
+    }
+
     return(
         <form onSubmit={handleSubmit}>
             <h2>Login</h2>

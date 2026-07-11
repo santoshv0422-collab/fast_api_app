@@ -1,13 +1,18 @@
 import os
 from dotenv import load_dotenv
+from groq import AuthenticationError
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 
 load_dotenv()
 
+llm_api_key = os.getenv("GROQ_API_KEY") or os.getenv("API_KEY") or os.getenv("GEMINIAPIKEY")
+if not llm_api_key:
+    raise ValueError("Missing Groq API key. Set GROQ_API_KEY or API_KEY in the backend .env file.")
+
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
-    api_key=os.getenv("GROQ_API_KEY"),
+    api_key=llm_api_key,
     temperature=0.3,
 )
 
@@ -25,5 +30,10 @@ Keep the analysis short and structured.
 resume_chain = resume_prompt |llm
 
 def analyse_resume(resume_text:str)-> str:
-    response = resume_chain.invoke({"resume_text":resume_text})
-    return response.content
+    try:
+        response = resume_chain.invoke({"resume_text":resume_text})
+        return response.content
+    except AuthenticationError:
+        return "LLM authentication failed: invalid Groq API key. Update GROQ_API_KEY in backend/.env."
+    except Exception as e:
+        return f"LLM service error: {e}"
